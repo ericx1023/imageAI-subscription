@@ -164,6 +164,7 @@ export default function Pricing() {
     }
   };
 
+
   const plans = [
     {
       title: "Basic",
@@ -175,6 +176,7 @@ export default function Pricing() {
       priceIdYearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
       actionLabel: "Get Started",
     },
+    //TODO: add pro plan id
     {
       title: "Pro",
       monthlyPrice: 25,
@@ -185,17 +187,7 @@ export default function Pricing() {
       priceIdMonthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
       priceIdYearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
       popular: true,
-    },
-    {
-      title: "Enterprise",
-      price: "Custom",
-      description: "Dedicated support and infrastructure to fit your needs",
-      features: ["Example Feature Number 1", "Example Feature Number 2", "Example Feature Number 3", "Super Exclusive Feature"],
-      actionLabel: "Contact Sales",
-      priceIdMonthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
-      priceIdYearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
-      exclusive: true,
-    },
+    }
   ]
 
   return (

@@ -9,15 +9,17 @@ datasource db {
 }
 
 model user {
-  id                Int      @id @default(autoincrement())
-  created_time      DateTime @default(now())
-  email             String   @unique
+  id                Int            @id @default(autoincrement())
+  created_time      DateTime       @default(now())
+  email             String         @unique
   first_name        String?
   last_name         String?
   gender            String?
   profile_image_url String?
-  user_id           String   @unique
+  user_id           String         @unique
   subscription      String?
+  model_params      model_params[]
+  user_images       user_images[]
 }
 
 model payments {
@@ -70,4 +72,30 @@ model invoices {
   status          String
   email           String
   user_id         String?
+}
+
+model model_params {
+  id           Int      @id @default(autoincrement())
+  created_time DateTime @default(now())
+  user_id      String
+  name         String
+  type         String
+  age          Int
+  eye_color    String
+  ethnicity    String
+  status       String   @default("processing")
+  photo_count  Int
+  model_id     String?
+  user         user     @relation(fields: [user_id], references: [user_id])
+}
+
+
+model user_images {
+  id            Int      @id @default(autoincrement())
+  created_time  DateTime @default(now())
+  user_id       String
+  file_path     String
+  public_url    String
+  original_name String
+  user          user     @relation(fields: [user_id], references: [user_id])
 }
