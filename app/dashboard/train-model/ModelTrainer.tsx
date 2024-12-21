@@ -3,8 +3,14 @@ import Replicate from 'replicate';
 import { Brain, Upload } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useUser } from "@clerk/nextjs";
+import JSZip from 'jszip';
+import { UseFormReturn } from "react-hook-form";
 
-const ModelTrainer: React.FC = () => {
+interface ModelTrainerProps {
+  form: UseFormReturn<any>;  // 或使用您的具體表單類型
+}
+
+const ModelTrainer = ({ form }: ModelTrainerProps) => {
 const replicate = new Replicate();
 
   const { user } = useUser();
@@ -36,10 +42,14 @@ const replicate = new Replicate();
 
       // 建立 FormData 來上傳圖片
       const formData = new FormData();
+      const zip = new JSZip();
       images.forEach((image) => {
-        formData.append('files', image);
+        zip.file(image.name, image);
       });
+      const zipFile = await zip.generateAsync({ type: 'blob' });
+      formData.append('zipFile', zipFile, 'images.zip');
       formData.append('userId', user?.id!);
+      formData.append('modelName', form.getValues('name'));
       // 首先上傳圖片到伺服器
       const uploadResponse = await fetch('/api/upload', {
         method: 'POST',
@@ -53,20 +63,19 @@ const replicate = new Replicate();
       const { urls } = await uploadResponse.json();
 
       console.log(urls);
-      
+      formData.append('urls', urls);
       const response = await fetch('/api/train', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ image_prompt: urls }),
+        body: formData,
       });
 
       if (!response.ok) {
         throw new Error('模型訓練請求失敗');
       }
 
-      const { modelId } = await response.json();
+      const { modelId, status } = await response.json();
+      console.log(`Training started: ${status}`)
+      console.log(`Training URL: https://replicate.com/p/${modelId}`)
       // 設定訓練狀態提示
       setTrainingStatus('模型訓練已開始，這可能需要超過30分鐘的時間... 系統會在訓練完成後發送email 通知您');
 

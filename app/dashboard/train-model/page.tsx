@@ -63,6 +63,20 @@ export default function TrainModelPage() {
           <CardDescription>
             開始創建您的第一個AI人物模型（例如您自己），這將花費約30分鐘，之後您就可以開始使用您自己的AI模型進行第一次拍攝！
           </CardDescription>
+          <div className="mt-4 space-y-4">
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-700 mb-2">
+                您的當前方案還可以建立 1 個AI模型。如需建立更多AI模型，請升級您的方案。
+              </p>
+            </div>
+            
+            <CardDescription>
+              AI模型是您的AI數位分身。您建立的AI模型是私密的,只有您可以使用。您可以透過上傳自己的照片來建立模型。
+              <br />
+              建立模型後,系統需要約2小時的時間來訓練您的照片。完成後,我們會寄送電子郵件通知您,
+              接著您就可以開始使用您的模型拍攝照片,並嘗試 Image AI 的其他功能,如照片組合和提示詞等。
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -72,7 +86,11 @@ export default function TrainModelPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>名稱</FormLabel>
+                    <FormLabel>您的名稱</FormLabel>
+                    <FormDescription>
+                      這個名稱將作為您的模型識別詞(Trigger Word)，在生成圖片時使用。<br />
+                      建議使用簡單且容易記住的英文名稱，例如 "John Chu" 或 "Mary Wang"。
+                    </FormDescription>
                     <FormControl>
                       <Input placeholder="模型名稱" {...field} />
                     </FormControl>
@@ -143,10 +161,10 @@ export default function TrainModelPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="black">黑色</SelectItem>
                         <SelectItem value="brown">棕色</SelectItem>
                         <SelectItem value="blue">藍色</SelectItem>
                         <SelectItem value="green">綠色</SelectItem>
-                        <SelectItem value="black">黑色</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -159,7 +177,7 @@ export default function TrainModelPage() {
                 name="ethnicity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>族��</FormLabel>
+                    <FormLabel>族裔</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -168,9 +186,9 @@ export default function TrainModelPage() {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="asian">亞洲</SelectItem>
-                        <SelectItem value="caucasian">白人</SelectItem>
+                        <SelectItem value="caucasian">歐洲裔</SelectItem>
                         <SelectItem value="african">非裔</SelectItem>
-                        <SelectItem value="hispanic">西班牙裔</SelectItem>
+                        <SelectItem value="hispanic">拉丁裔</SelectItem>
                         <SelectItem value="other">其他</SelectItem>
                       </SelectContent>
                     </Select>
@@ -178,7 +196,7 @@ export default function TrainModelPage() {
                   </FormItem>
                 )}
               />
-                            <div className="space-y-6 mt-4">
+              <div className="space-y-6 mt-4">
                 <div className="space-y-4">
                   <h3 className="font-medium">✅ 適合的照片</h3>
                   <p className="text-sm text-muted-foreground">
@@ -219,7 +237,6 @@ export default function TrainModelPage() {
                   </div>
                 </div>
               </div>
-              <ModelTrainer />
               <FormField
                 control={form.control}
                 name="consent"
@@ -242,6 +259,7 @@ export default function TrainModelPage() {
                   </FormItem>
                 )}
               />
+              <ModelTrainer form={form} />
             </form>
           </Form>
         </CardContent>

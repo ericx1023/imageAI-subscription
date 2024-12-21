@@ -40,6 +40,7 @@ async function handleSubscriptionEvent(
 ) {
   const subscription = event.data.object as Stripe.Subscription;
   const customerEmail = await getCustomerEmail(subscription.customer as string);
+  const planId = subscription.items.data[0]?.price.id;
 
   if (!customerEmail) {
     return NextResponse.json({
@@ -94,6 +95,43 @@ async function handleSubscriptionEvent(
       status: 500,
       error: `Error during subscription ${type}`,
     });
+  }
+
+  if (type === "created" || type === "updated") {
+    const creditAmount = planId.includes('premium') ? 5 : 1; // Premium 給 5 credits，Basic 給 1 credit
+    const nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+    const { error: creditError } = await supabase
+      .from('credits')
+      .upsert({
+        user_id: subscription.metadata?.userId,
+        amount: creditAmount,
+        used: 0,
+        expires_at: nextMonth.toISOString()
+      });
+
+    if (creditError) {
+      console.error('Error creating credits:', creditError);
+      return NextResponse.json({
+        status: 500,
+        error: 'Error creating credits'
+      });
+    }
+  }
+
+  if (type === "deleted") {
+    const { error: creditError } = await supabase
+      .from('credits')
+      .update({ 
+        amount: 0,
+        expires_at: new Date().toISOString() 
+      })
+      .eq('user_id', subscription.metadata?.userId);
+
+    if (creditError) {
+      console.error('Error updating credits:', creditError);
+    }
   }
 
   return NextResponse.json({

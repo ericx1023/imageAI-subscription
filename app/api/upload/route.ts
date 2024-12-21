@@ -18,10 +18,18 @@ interface SupabaseError {
 
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
-    const files = formData.getAll('files');
-    const userId = formData.get('userId'); // 確保從前端傳入 userId
+    // 檢查 Content-Type
+    const contentType = request.headers.get('content-type');
+    if (!contentType || !contentType.includes('multipart/form-data')) {
+      return NextResponse.json(
+        { error: '請求格式錯誤：需要 multipart/form-data' },
+        { status: 400 }
+      );
+    }
 
+    const formData = await request.formData();
+    const files = formData.getAll('zipFile');
+    const userId = formData.get('userId'); // 確保從前端傳入 userId
     if (!files || files.length === 0) {
       return NextResponse.json(
         { error: '沒有找到檔案' },
@@ -39,7 +47,6 @@ export async function POST(request: Request) {
     const uploadPromises = files.map(async (file: any) => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${uuidv4()}.${fileExt}`;
-      // 可以根據不同類型的檔案使��不同的 bucket
       const bucket = 'training-images';  // 或是 'private-files', 'public-assets' 等
       const filePath = `${userId}/${fileName}`;
 
@@ -55,18 +62,17 @@ export async function POST(request: Request) {
         throw uploadError;
       }
 
-      // 取得公開 URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('training-images')
-        .getPublicUrl(filePath);
-
+      // 取得 URL
+      const signedUrl = await supabase.storage
+      .from('training-images')
+        .createSignedUrl(filePath, 60 * 60 * 24); // 24小時有效期
       // 在資料庫中記錄檔案資訊（選擇性）
       const { error: dbError } = await supabase
         .from('user_images')
         .insert({
           user_id: userId,
           file_path: filePath,
-          public_url: publicUrl,
+          public_url: signedUrl,
           original_name: file.name
         });
 
@@ -74,12 +80,12 @@ export async function POST(request: Request) {
         throw dbError;
       }
 
-      return publicUrl;
+      return signedUrl;
     });
 
     const urls = await Promise.all(uploadPromises);
 
-    return NextResponse.json({ urls });
+    return NextResponse.json({ urls:urls[0] });
   } catch (error: unknown) {
     const supabaseError = error as SupabaseError;
     console.error('上傳錯誤詳情:', {

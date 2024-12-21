@@ -72,29 +72,49 @@ export default function NavBar() {
                         <NavigationMenuTrigger className="dark:bg-black dark:bg-opacity-50">
                             Features
                         </NavigationMenuTrigger>
-                        <NavigationMenuContent>
-                            <ul className="flex flex-col w-[400px] gap-3 p-4 lg:w-[500px]">
-                                {components.map((component, index) => (
-                                    <ListItem
-                                        key={index}
-                                        title={component.title}
-                                        href={component.href}
-                                    >
-                                        {component.description}
-                                    </ListItem>
-                                ))}
-                            </ul>
-                        </NavigationMenuContent>
+                            <NavigationMenuContent>
+                                <ul className="flex flex-col w-[400px] gap-3 p-4 lg:w-[500px]">
+                                    {components.map((component, index) => (
+                                        <ListItem
+                                            key={index}
+                                            title={component.title}
+                                            href={component.href}
+                                        >
+                                            {component.description}
+                                        </ListItem>
+                                    ))}
+                                </ul>
+                            </NavigationMenuContent>
                     </NavigationMenuItem>
-                    <NavigationMenuItem className="max-[825px]:hidden">
-                        <Link href="/dashboard" legacyBehavior passHref>
-                            <Button variant="ghost">
-                                Dashboard
-                            </Button>
-                        </Link>
-                    </NavigationMenuItem>
+                    {userId ? (
+                        <NavigationMenuItem className="max-[825px]:hidden">
+                            <Link href="/dashboard" legacyBehavior passHref>
+                                <Button variant="ghost">
+                                    Dashboard
+                                </Button>
+                            </Link>
+                        </NavigationMenuItem>
+                    ) : (
+                        <NavigationMenuItem className="max-[825px]:hidden">
+                            <Link href="/sign-in" legacyBehavior passHref>
+                                <Button variant="outline" className="bg-blue-500 hover:bg-blue-600">
+                                    使用 Google 繼續
+                                </Button>
+                            </Link>
+                        </NavigationMenuItem>
+                    )}
                 </NavigationMenuList>
             </NavigationMenu>
+            {/* {!userId && (
+                <div className="flex items-center gap-2">
+                    <Link href="/sign-in" legacyBehavior passHref>
+                        <Button variant="ghost">
+                        使用 Google 繼續
+                        </Button>
+                    </Link>
+                </div>
+            )} */}
+            
             <div className="flex items-center gap-2 max-[825px]:hidden">
                 {userId && <UserProfile />}
                 <ModeToggle />

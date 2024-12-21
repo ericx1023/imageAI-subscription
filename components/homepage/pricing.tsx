@@ -164,7 +164,6 @@ export default function Pricing() {
     }
   };
 
-
   const plans = [
     {
       title: "Basic",

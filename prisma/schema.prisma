@@ -20,6 +20,7 @@ model user {
   subscription      String?
   model_params      model_params[]
   user_images       user_images[]
+  credits           credits?
 }
 
 model payments {
@@ -99,3 +100,14 @@ model user_images {
   original_name String
   user          user     @relation(fields: [user_id], references: [user_id])
 }
+
+model credits {
+  user_id      String   @id
+  created_time DateTime @default(now())
+  amount       Int      @default(0)
+  used         Int      @default(0)
+  expires_at   DateTime
+  user         user     @relation(fields: [user_id], references: [user_id])
+}
+
+

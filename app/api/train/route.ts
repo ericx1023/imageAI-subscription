@@ -7,53 +7,73 @@ const replicate = new Replicate({
 
 export async function POST(request: Request) {
   try {
-    const { image_prompt } = await request.json();
-
-    if (!image_prompt || image_prompt.length === 0) {
-      return NextResponse.json(
-        { error: '沒有提供圖片網址' },
-        { status: 400 }
-      );
+    const formData = await request.formData();
+    const urls = formData.get('urls');
+    const userId = formData.get('userId'); // 確保從前端傳入 userId
+    const modelName = formData.get('modelName');
+    if (!urls) {
+      return new Response('No image prompt provided', { status: 400 });
     }
-
-    // 開始 Replicate 訓練
-    const input = {
-        image_prompt,
-        prompt:"",
-        prompt_upsampling: true
-    };
     
     const callbackURL = process.env.NGROK_URL 
       ? `${process.env.NGROK_URL}/api/webhooks/replicate`
       : `${process.env.FRONTEND_URL}/api/webhooks/replicate`;
-    const prediction = await replicate.predictions.create({
-      model: "black-forest-labs/flux-1.1-pro",
-      input: {
-        image_prompt: typeof input.image_prompt === 'string' 
-          ? encodeURI(input.image_prompt)
-          : Array.isArray(input.image_prompt) 
-            ? input.image_prompt.map(url => encodeURI(url))
-            : '',
-        prompt: input.prompt || "",
-        prompt_upsampling: input.prompt_upsampling || true,
-        num_steps: input.num_steps || 100,
-        seed: input.seed || 42,
-        guidance_scale: input.guidance_scale || 7.5,
-      },
-      webhook: callbackURL,
-      webhook_events_filter: ["completed"],
-    });
-    
-    return NextResponse.json({ 
-      modelId: prediction.id,
-      status: prediction.status 
-    });
+      const model = await replicate.models.create(
+        process.env.REPLICATE_USERNAME!,
+        modelName as string,
+        {
+          visibility: 'private',
+          hardware: 'cpu'
+        }   
+      )
+    const training = await replicate.trainings.create(
+        "ostris",
+        "flux-dev-lora-trainer",
+        "e440909d3512c31646ee2e0c7d6f6f4923224863a6a10c494606e79fb5844497",
+        {
+          // You need to create a model on Replicate that will be the destination for the trained version.
+          destination: `${model.owner}/${modelName}`,  // 修改目標模型格式
+          input: {
+            steps: 1000,
+            lora_rank: 16,
+            optimizer: "adamw8bit",
+            batch_size: 1,
+            resolution: "512,768,1024",
+            autocaption: true,
+            input_images: urls,
+            trigger_word: modelName,
+            learning_rate: 0.0004,
+            wandb_project: "flux_train_replicate",
+            wandb_save_interval: 100,
+            caption_dropout_rate: 0.05,
+            cache_latents_to_disk: false,
+            wandb_sample_interval: 100
+          }
+        }
+      );     
+       return NextResponse.json({ 
+        modelId: training.id,
+        status: training.status 
+      });
 
   } catch (error) {
-    console.error('訓練錯誤:', error);
-    return NextResponse.json(
-      { error: '訓練啟動失敗' },
-      { status: 500 }
-    );
+    console.error('Training API Error:', error);
+    // Enter a valid name. This value may contain only lowercase letters, numbers, dashes, underscores, or periods, and may not start or end with a dash, underscore, or period
+    // 根據錯誤類型返回不同的錯誤信息
+    if (error instanceof Error) {
+      return new Response(`錯誤信息: ${error.message}`, { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+    
+    return new Response('未知錯誤發生', { 
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
   }
 } 
