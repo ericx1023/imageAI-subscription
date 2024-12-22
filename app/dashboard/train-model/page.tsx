@@ -73,7 +73,7 @@ export default function TrainModelPage() {
             <CardDescription>
               AI模型是您的AI數位分身。您建立的AI模型是私密的,只有您可以使用。您可以透過上傳自己的照片來建立模型。
               <br />
-              建立模型後,系統需要約2小時的時間來訓練您的照片。完成後,我們會寄送電子郵件通知您,
+              建立模��後,系統需要約2小時的時間來訓練您的照片。完成後,我們會寄送電子郵件通知您,
               接著您就可以開始使用您的模型拍攝照片,並嘗試 Image AI 的其他功能,如照片組合和提示詞等。
             </CardDescription>
           </div>
@@ -89,7 +89,7 @@ export default function TrainModelPage() {
                     <FormLabel>您的名稱</FormLabel>
                     <FormDescription>
                       這個名稱將作為您的模型識別詞(Trigger Word)，在生成圖片時使用。<br />
-                      建議使用簡單且容易記住的英文名稱，例如 "John Chu" 或 "Mary Wang"。
+                      建議使用簡單且容易記住的英文名稱，例如 &quot;John Chu&quot; 或 &quot;Mary Wang&quot;。
                     </FormDescription>
                     <FormControl>
                       <Input placeholder="模型名稱" {...field} />
