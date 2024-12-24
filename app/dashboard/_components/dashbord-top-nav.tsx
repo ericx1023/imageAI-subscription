@@ -8,7 +8,7 @@ import { SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/component
 import { UserProfile } from '@/components/user-profile'
 import config from '@/config'
 import { HamburgerMenuIcon } from '@radix-ui/react-icons'
-import { Banknote, Folder, HomeIcon, Settings } from 'lucide-react'
+import { Banknote, Brain, Folder, HomeIcon, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { ReactNode } from 'react'
 
@@ -43,6 +43,14 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
                   <Button variant="outline" className="w-full">
                     <Folder className="mr-2 h-4 w-4" />
                     Projects
+                  </Button>
+                </Link>
+              </DialogClose>
+              <DialogClose asChild>
+                <Link href="/dashboard/train-model">
+                  <Button variant="outline" className="w-full">
+                    <Brain className="mr-2 h-4 w-4" />
+                    Train Model
                   </Button>
                 </Link>
               </DialogClose>

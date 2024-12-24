@@ -28,6 +28,11 @@ const nextConfig: NextConfig = {
       port: '',
       pathname: '/**'
     }]
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb'  // 設置更大的限制
+    }
   }
 };
 export default nextConfig;

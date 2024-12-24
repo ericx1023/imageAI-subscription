@@ -5,6 +5,7 @@ import { useDropzone } from 'react-dropzone';
 import { useUser } from "@clerk/nextjs";
 import JSZip from 'jszip';
 import { UseFormReturn } from "react-hook-form";
+import { toast } from "sonner"
 
 interface ModelTrainerProps {
   form: UseFormReturn<any>;  // 或使用您的具體表單類型
@@ -56,20 +57,24 @@ const replicate = new Replicate();
         body: formData,
       });
 
+
       if (!uploadResponse.ok) {
         throw new Error('圖片上傳失敗');
       }
 
       const { urls } = await uploadResponse.json();
-
-      console.log(urls);
-      formData.append('urls', urls);
+      const signedUrl = urls[0].data.signedUrl;
+      
+      formData.append('signedUrl', signedUrl);
       const response = await fetch('/api/train', {
         method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
+        toast('模型訓練請求失敗', {
+          description: response.statusText
+        })
         throw new Error('模型訓練請求失敗');
       }
 

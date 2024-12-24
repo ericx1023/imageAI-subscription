@@ -8,6 +8,16 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY!
 );
 
+type UploadResponse = {
+  data: {
+    path: string       // 檔案在 bucket 中的路徑
+    id: string         // 檔案唯一識別碼
+    fullPath: string   // 完整路徑，包含 bucket 名稱
+    size: number       // 檔案大小（位元組）
+    lastModified: Date // 最後修改時間
+  }
+  error: null         // 成功時為 null
+}
 interface SupabaseError {
   message: string;
   code?: string;
@@ -80,12 +90,23 @@ export async function POST(request: Request) {
         throw dbError;
       }
 
-      return signedUrl;
+      return {
+        data: {
+          path: filePath,
+          id: fileName,
+          fullPath: signedUrl,
+          size: file.size,
+          lastModified: new Date()
+        },
+        error: null
+      };
     });
 
-    const urls = await Promise.all(uploadPromises);
-
-    return NextResponse.json({ urls:urls[0] });
+    const uploadResponses = await Promise.all(uploadPromises);
+    console.log('uploadResponses:', JSON.stringify(uploadResponses, null, 2));
+    return NextResponse.json({ 
+      urls: uploadResponses.map(response => response.data.fullPath)
+    });
   } catch (error: unknown) {
     const supabaseError = error as SupabaseError;
     console.error('上傳錯誤詳情:', {
