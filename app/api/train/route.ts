@@ -1,17 +1,20 @@
 import { NextResponse } from 'next/server';
 import { ValidationService } from '../../services/ValidationService';
-import { ReplicateService } from '../../services/ReplicateService';
+import { TrainingService } from '../../services/training.service';
 import { SignedUrlData, TrainingError } from '../../types/training';
+import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: Request) {
-  const replicateService = new ReplicateService();
+  const trainingService = new TrainingService();
+  const supabase = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_KEY!
+  );
 
   try {
-    const formData = await request.formData();
-    const signedUrl = formData.get('signedUrl');
-    const userId = formData.get('userId');
-    let modelName = formData.get('modelName') as string;
-
+    const body = await request.json();
+    const { signedUrl, userId, modelName } = body;
+    let formattedModelName = modelName as string;
 
     // 驗證輸入
     if (!signedUrl || !userId || !modelName) {
@@ -22,8 +25,8 @@ export async function POST(request: Request) {
     }
 
     // 驗證模型名稱
-    modelName = ValidationService.formatModelName(modelName);
-    if (!ValidationService.isValidModelName(modelName)) {
+    formattedModelName = ValidationService.formatModelName(formattedModelName);
+    if (!ValidationService.isValidModelName(formattedModelName)) {
       return createErrorResponse({
         error: '模型名稱格式無效',
         message: '模型名稱格式不正確'
@@ -31,19 +34,36 @@ export async function POST(request: Request) {
     }
 
     // 建立模型和訓練
-    const model = await replicateService.createModel(
+    const model = await trainingService.createModel(
       process.env.REPLICATE_USERNAME!,
-      modelName
+      formattedModelName
     );
-    
-    const signedUrlString = signedUrl?.toString() || '';
-    const training = await replicateService.createTraining(signedUrlString, modelName);
+    body.modelName = formattedModelName;
+    const training = await trainingService.createTraining(signedUrl, body);
 
-    return NextResponse.json({
-      modelId: training.id,
-      status: training.status
-    });
-    
+    //if api response is 200, 
+    if (training.status === 'processing') {
+      //write to supabase
+      const {data, error} = await supabase.from('trainings').insert({
+        user_id: userId,
+        model_id: training.id,
+        status: training.status,
+        model_name: formattedModelName
+      });
+      if (error) {
+        console.error('寫入訓練資料庫錯誤:', error);
+        return createErrorResponse({
+          error: '寫入訓練資料庫錯誤',
+          message: error instanceof Error ? error.message : '未知錯誤'
+        });
+      }
+      else {
+        return NextResponse.json({
+          modelId: training.id,
+          status: training.status
+        });
+      }
+    }
   } catch (error) {
     console.error('Training API Error:', error);
     return createErrorResponse({

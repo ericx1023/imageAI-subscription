@@ -21,6 +21,7 @@ model user {
   model_params      model_params[]
   user_images       user_images[]
   credits           credits?
+  trainings         trainings[]
 }
 
 model payments {
@@ -86,7 +87,7 @@ model model_params {
   ethnicity    String
   status       String   @default("processing")
   photo_count  Int
-  model_id     String?
+  model_name     String?
   user         user     @relation(fields: [user_id], references: [user_id])
 }
 
@@ -110,4 +111,14 @@ model credits {
   user         user     @relation(fields: [user_id], references: [user_id])
 }
 
+model trainings {
+  id           Int      @id @default(autoincrement())
+  created_time DateTime @default(now())
+  user_id      String
+  replicate_model_id     String
+  status       String
+  user         user     @relation(fields: [user_id], references: [user_id])
+  completed    Boolean  @default(false)
+  model_name   String
+}
 

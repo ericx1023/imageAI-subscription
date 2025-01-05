@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Replicate from 'replicate';
 import { Brain, Upload } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
@@ -6,7 +6,7 @@ import { useUser } from "@clerk/nextjs";
 import JSZip from 'jszip';
 import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner"
-
+import { isValidModelName, isValidUrl, formatModelName } from '@/utils/validations/modelValidators';
 interface ModelTrainerProps {
   form: UseFormReturn<any>;  // 或使用您的具體表單類型
 }
@@ -18,6 +18,10 @@ const replicate = new Replicate();
   const [images, setImages] = useState<File[]>([]);
   const [trainingStatus, setTrainingStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [modelId, setModelId] = useState<string | null>(null);
+  const [modelStatus, setModelStatus] = useState<string | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setImages(prev => [...prev, ...acceptedFiles]);
@@ -31,6 +35,43 @@ const replicate = new Replicate();
     multiple: true
   });
 
+  const checkModelStatus = useCallback(async (id: string) => {
+    try {
+      const response = await fetch(`/api/train/check-status?modelId=${id}`);
+      if (!response.ok) throw new Error('檢查狀態失敗');
+      
+      const data = await response.json();
+      
+      if (data.status === 'succeeded' || data.status === 'failed') {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+        
+        if (data.status === 'succeeded') {
+          setTrainingStatus('模型訓練完成！');
+          toast.success('模型訓練完成！');
+        } else {
+          setTrainingStatus('模型訓練失敗');
+          toast.error('模型訓練失敗');
+        }
+      }
+      if(data.status === 'processing') {
+        setModelStatus('模型訓練中..., 過程可能需要30分鐘以上，訓練結束後會發送email通知您');
+      }
+    } catch (error) {
+      console.error('檢查模型狀態時發生錯誤:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
   const handleTrainModel = async () => {
     if (images.length === 0) {
       setError('請先上傳圖片');
@@ -38,9 +79,11 @@ const replicate = new Replicate();
     }
 
     try {
+      setIsLoading(true);
       setTrainingStatus('準備中...');
       setError(null);
 
+      const trainingData = form.getValues();
       // 建立 FormData 來上傳圖片
       const formData = new FormData();
       const zip = new JSZip();
@@ -50,8 +93,9 @@ const replicate = new Replicate();
       const zipFile = await zip.generateAsync({ type: 'blob' });
       formData.append('zipFile', zipFile, 'images.zip');
       formData.append('userId', user?.id!);
-      formData.append('modelName', form.getValues('name'));
-      // 首先上傳圖片到伺服器
+      formData.append('modelName', formatModelName(form.getValues('modelName')));
+      trainingData.userId = user?.id!;
+      trainingData.modelName = formatModelName(form.getValues('modelName'));
       const uploadResponse = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
@@ -64,12 +108,17 @@ const replicate = new Replicate();
 
       const { urls } = await uploadResponse.json();
       const signedUrl = urls[0].data.signedUrl;
-      
-      formData.append('signedUrl', signedUrl);
-      const response = await fetch('/api/train', {
-        method: 'POST',
-        body: formData,
-      });
+      trainingData.signedUrl = signedUrl;
+      const response = await fetch('/api/train',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+  
+          body: JSON.stringify(trainingData)
+        }
+      );
 
       if (!response.ok) {
         toast('模型訓練請求失敗', {
@@ -79,14 +128,19 @@ const replicate = new Replicate();
       }
 
       const { modelId, status } = await response.json();
-      console.log(`Training started: ${status}`)
-      console.log(`Training URL: https://replicate.com/p/${modelId}`)
-      // 設定訓練狀態提示
-      setTrainingStatus('模型訓練已開始，這可能需要超過30分鐘的時間... 系統會在訓練完成後發送email 通知您');
+      setModelId(modelId);
 
+      if (modelId) {
+        setTrainingStatus('模型訓練已開始，正在監控進度...');
+        intervalRef.current = setInterval(() => checkModelStatus(modelId), 30000);
+        checkModelStatus(modelId);
+      }
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : '訓練過程中發生錯誤');
       setTrainingStatus(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -126,10 +180,11 @@ const replicate = new Replicate();
 {/* disabled={images.length === 0 ||// !!trainingStatus} */}
       <button
         onClick={handleTrainModel}
+        disabled={images.length === 0 || isLoading}
         className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 
           disabled:bg-gray-300 disabled:cursor-not-allowed"
       >
-        開始訓練模型
+        {isLoading ? '訓練中...' : '開始訓練模型'}
       </button>
 
       {trainingStatus && (
@@ -137,6 +192,9 @@ const replicate = new Replicate();
           <Brain className="mx-auto mb-4 animate-pulse" size={64} />
           <h2 className="text-2xl font-bold mb-4">訓練進行中...</h2>
           <p className="mb-2">{trainingStatus}</p>
+          {modelStatus && (
+            <p className="text-sm text-gray-600">狀態: {modelStatus}</p>
+          )}
         </div>
       )}
       

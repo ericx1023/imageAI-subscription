@@ -25,12 +25,22 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import ModelTrainer from "./ModelTrainer"
+// const credits = supabse.get('credits')
+import { useEffect, useState } from "react"
+import { useUser } from "@clerk/nextjs"
+import { isValidModelName } from "@/utils/validations/modelValidators"
+
+
 
 const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "名稱必須至少包含2個字元",
-  }),
-  type: z.string(),
+  modelName: z.string()
+    .min(2, { message: "名稱必須至少包含5個字元" })
+    .max(50, { message: "名稱不能超過20個字元" })
+    .refine(
+      (name) => isValidModelName(name),
+      { message: "名稱只能包含英文字母、數字、空格、點、連字符和底線，且必須以字母或數字開頭和結尾" }
+    ),
+  photoType: z.string(),
   age: z.string().min(1, { message: "請輸入年齡" }),
   eyeColor: z.string(),
   ethnicity: z.string(),
@@ -41,12 +51,36 @@ const formSchema = z.object({
 })
 
 export default function TrainModelPage() {
+  const [credits, setCredits] = useState<number>(0)
+  const { user } = useUser();
+
+  useEffect(() => {
+    const fetchCredits = async () => {
+      if (!user) return;
+      
+      try {
+        const response = await fetch(`/api/credits?userId=${user?.id}`)
+        const data = await response.json()
+        setCredits(data.credits)
+      } catch (error) {
+        console.error('獲取點數時發生錯誤:', error)
+        toast.error('無法獲取點數資訊')
+      }
+    }
+  
+    fetchCredits()
+  }, [user])
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      modelName: "",
       consent: false,
       age: "",
+      eyeColor: "",
+      ethnicity: "",
+      photoType: "",
+      photos: [],
     },
   })
 
@@ -61,12 +95,12 @@ export default function TrainModelPage() {
         <CardHeader>
           <CardTitle>歡迎使用 Photo AI!</CardTitle>
           <CardDescription>
-            開始創建您的第一個AI人物模型（例如您自己），這將花費約30分鐘，之後您就可以開始使用您自己的AI模型進行第一次拍攝！
+            開始創建您的第一個AI人物模型（例如您自己），這將花費約30分鐘，之後您就可以開始使用��自己的AI模型進行第一次拍攝！
           </CardDescription>
           <div className="mt-4 space-y-4">
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-700 mb-2">
-                您的當前方案還可以建立 1 個AI模型。如需建立更多AI模型，請升級您的方案。
+                您的當前方案還可以建立 {credits} 個AI模型。如需建立更多AI模型，請升級您的方案。
               </p>
             </div>
             
@@ -83,7 +117,7 @@ export default function TrainModelPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <FormField
                 control={form.control}
-                name="name"
+                name="modelName"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>您的名稱</FormLabel>
@@ -101,7 +135,7 @@ export default function TrainModelPage() {
 
               <FormField
                 control={form.control}
-                name="type"
+                name="photoType"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>類型</FormLabel>
@@ -112,16 +146,17 @@ export default function TrainModelPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="m">男性</SelectItem>
-                        <SelectItem value="f">女性</SelectItem>
-                        <SelectItem value="couple">情侶/兩人</SelectItem>
+                        <SelectItem value="male">男性</SelectItem>
+                        <SelectItem value="female">女性</SelectItem>
+                        <SelectItem value="person">不指定</SelectItem>
                         <SelectItem value="dog">狗</SelectItem>
                         <SelectItem value="cat">貓</SelectItem>
-                        <SelectItem value="o">其他</SelectItem>
+                        {/* <SelectItem value="couple">情侶/兩人</SelectItem>
+                        <SelectItem value="other">其他</SelectItem>
                         <SelectItem value="style">風格</SelectItem>
                         <SelectItem value="product">產品</SelectItem>
                         <SelectItem value="clothing">服裝</SelectItem>
-                        <SelectItem value="object">物品</SelectItem>
+                        <SelectItem value="object">物品</SelectItem> */}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -185,8 +220,8 @@ export default function TrainModelPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="asian">亞洲</SelectItem>
-                        <SelectItem value="caucasian">歐洲裔</SelectItem>
+                        <SelectItem value="asian">亞裔</SelectItem>
+                        <SelectItem value="caucasian">歐裔</SelectItem>
                         <SelectItem value="african">非裔</SelectItem>
                         <SelectItem value="hispanic">拉丁裔</SelectItem>
                         <SelectItem value="other">其他</SelectItem>
