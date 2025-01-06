@@ -39,6 +39,7 @@ export class TrainingService {
     const ethnicity = body.ethnicity;
     const photoType = body.photoType;
     const userId = body.userId;
+    const basePrompt = `a photo of a ${ethnicity} ${age} year old ${photoType} with ${eyeColor} eyes`;
     return await this.replicate.trainings.create(
       "ostris",
       "flux-dev-lora-trainer",
@@ -60,13 +61,24 @@ export class TrainingService {
           caption_dropout_rate: 0.05,
           cache_latents_to_disk: false,
           wandb_sample_interval: 100,
-          base_prompt: `a photo of a ${ethnicity} ${age} year old ${photoType} with ${eyeColor} eyes`,
+          base_prompt: basePrompt,
           webhook: process.env.NGROK_URL + "/api/webhooks/replicate?userId=${userId}&modelName=${modelName}",
           webhook_events_filter: ["completed", "failed", "started", "logs", "canceled"],
           disable_safety_checker: false
         }
       }
     );
+  }
+
+  async createTrainingTable(userId: string, modelId: string, modelName: string, basePrompt: string) {
+    const { data, error } = await supabase.from('trainings').insert({
+      user_id: userId,
+      replicate_model_id: modelId,
+      model_name: modelName,
+      base_prompt: basePrompt
+    });
+    if (error) throw error;
+    return data;
   }
 
   // 獲取訓練模型

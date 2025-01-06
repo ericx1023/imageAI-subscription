@@ -1,51 +1,41 @@
-'use client';
-import { useState } from 'react';
+import { auth } from '@clerk/nextjs/server';
+import { createClient } from "@supabase/supabase-js";
+import GenerateButton from './_components/generate-picture-button';
+import PicturesClient from './components/PicturesClient';
+export default async function PicturesPage() {
+  const { userId } = await auth();
+  const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!);
+  const { data: model } = await supabase.from('trainings').select('replicate_model_id, model_name, base_prompt').eq('user_id', userId).single();
+  const modelName = model?.model_name;
+  //
+  const getImageUrl = async (imageName: string) => {
+    const { data } = await supabase
+      .storage
+      .from('generated-images')
+      .createSignedUrl(userId! + '/' + imageName, 3600); // 創建一個有效期為1小時的簽名URL
+    return data?.signedUrl;
+  };
 
-export default function PicturesPage() {
-  // 定義狀態來存儲圖片
-  const [images, setImages] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const jpgImages = await supabase.storage.from('generated-images').list(userId!);
 
-  // 處理生成圖片的函數
-  async function handleGenerateImages() {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/generate-picture');
-      const base64Images = await response.json();
-      
-      const images = base64Images.map((base64: string) => {
-        return `data:image/jpeg;base64,${base64}`;
-      });
-
-      setImages(images);
-      
-    } catch (error) {
-      console.error('生成圖片時發生錯誤:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const webpImages = await Promise.all(
+    jpgImages?.data
+      ?.filter(file => file.name.endsWith('.webp'))
+      .map(async file => ({ 
+        ...file, 
+        url: await getImageUrl(file.name) 
+      })) ?? []
+  );
+  console.log(`webpImages: ${JSON.stringify(webpImages)}`);
 
   return (
-    <div className="p-4">
-      <button 
-        onClick={handleGenerateImages}
-        disabled={isLoading}
-        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
-      >
-        {isLoading ? '生成中...' : '生成圖片'}
-      </button>
-
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-        {images.map((imageUrl, index) => (
-          <img 
-            key={index}
-            src={imageUrl} 
-            alt={`Generated image ${index + 1}`}
-            className="w-full h-auto rounded"
-          />
-        ))}
-      </div>
-    </div>
+    <PicturesClient 
+      userId={userId!}
+      modelName={modelName} 
+      webpImages={webpImages} 
+      modelId={model?.replicate_model_id}
+      basePrompt={model?.base_prompt}
+    />
   );
+
 }

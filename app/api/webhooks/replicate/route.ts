@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { CreditsService } from "@/app/services/credits.service";
 import { TrainingService } from "@/app/services/training.service";
 import { GenerateService } from "@/app/services/generate.service";
-import { CloudflareService } from "@/app/services/cloudflare.service";
+import { CloudflareService, UploadImagesService } from "@/app/services/upload-images.service";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -40,12 +40,11 @@ export async function POST(req: Request) {
       const generateService = new GenerateService();
       const images = await generateService.generatePicture(userId, payload.id, modelName!);
       //upload images to cloudflare
-      const cloudflareService = new CloudflareService();
-      const cloudflareImages = await cloudflareService.uploadToCloudflareImages(images);
-      // Cache the image ID
-      await env.IMAGE_CACHE.put(cacheKey, cloudflareImageId)
-      console.log('Stored in cache:', cacheKey, cloudflareImageId)
-      
+      const uploadImagesService = new UploadImagesService(userId, payload.id);
+      const uploadedImages = await uploadImagesService.upload(images);
+
+      console.log('Uploaded images:', uploadedImages)
+      //send email to user
 
       if (user && user.emailAddresses.length > 0) {
         // 取得用戶的主要電子郵件
