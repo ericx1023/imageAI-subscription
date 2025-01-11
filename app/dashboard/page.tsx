@@ -7,11 +7,11 @@ import { BarChartBetter } from './_components/bar-chart-better'
 import { sendEmail } from '@/app/utils/email'
 
 export default async function Dashboard() {
-  await sendEmail({
-    to: 'ericx1023@gmail.com',
-    subject: 'Hello World',
-    text: 'Hello World'
-  })
+  // await sendEmail({
+  //   to: 'ericx1023@gmail.com',
+  //   subject: 'Hello World',
+  //   text: 'Hello World'
+  // })
 
   return (
     <div className='flex flex-col justify-center items-start flex-wrap px-4 pt-4 gap-4'>

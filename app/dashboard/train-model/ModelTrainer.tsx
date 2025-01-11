@@ -9,9 +9,10 @@ import { toast } from "sonner"
 import { isValidModelName, isValidUrl, formatModelName } from '@/utils/validations/modelValidators';
 interface ModelTrainerProps {
   form: UseFormReturn<any>;  // 或使用您的具體表單類型
+  onCreditsUpdate: (credits: number) => void;
 }
 
-const ModelTrainer = ({ form }: ModelTrainerProps) => {
+const ModelTrainer = ({ form, onCreditsUpdate }: ModelTrainerProps) => {
 const replicate = new Replicate();
 
   const { user } = useUser();
@@ -84,6 +85,7 @@ const replicate = new Replicate();
       setError(null);
 
       const trainingData = form.getValues();
+      const basePrompt = `a photo of a ${trainingData.ethnicity} ${trainingData.age} year old ${trainingData.photoType} with ${trainingData.eyeColor} eyes`;
       // 建立 FormData 來上傳圖片
       const formData = new FormData();
       const zip = new JSZip();
@@ -109,6 +111,7 @@ const replicate = new Replicate();
       const { urls } = await uploadResponse.json();
       const signedUrl = urls[0].data.signedUrl;
       trainingData.signedUrl = signedUrl;
+      trainingData.basePrompt = basePrompt;
       const response = await fetch('/api/train',
         {
           method: 'POST',
@@ -126,20 +129,20 @@ const replicate = new Replicate();
         })
         throw new Error('模型訓練請求失敗');
       }
-
-      const { modelId, status } = await response.json();
-      setModelId(modelId);
-
-      if (modelId) {
+      else {
+        const { modelId, status, remainingCredits } = await response.json();
+        setModelId(modelId);
         setTrainingStatus('模型訓練已開始，正在監控進度...');
         intervalRef.current = setInterval(() => checkModelStatus(modelId), 30000);
         checkModelStatus(modelId);
+        
+        // 更新父組件中的點數
+        onCreditsUpdate(remainingCredits);
       }
       
     } catch (err) {
       setError(err instanceof Error ? err.message : '訓練過程中發生錯誤');
       setTrainingStatus(null);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -180,7 +183,7 @@ const replicate = new Replicate();
 {/* disabled={images.length === 0 ||// !!trainingStatus} */}
       <button
         onClick={handleTrainModel}
-        disabled={images.length === 0 || isLoading}
+        disabled={images.length === 0 || isLoading || !!trainingStatus}
         className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 
           disabled:bg-gray-300 disabled:cursor-not-allowed"
       >

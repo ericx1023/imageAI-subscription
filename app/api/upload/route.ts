@@ -123,6 +123,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (supabaseError.code === '23503') { // 外鍵約束違反
+      return NextResponse.json(
+        { error: '使用者不存在', details: supabaseError.message },
+        { status: 404 }
+      );
+    }
+
     if (supabaseError.statusCode === '42P01') { // 資料表不存在
       return NextResponse.json(
         { error: '資料庫設定錯誤', details: supabaseError.message },

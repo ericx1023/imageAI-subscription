@@ -1,8 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!
 );
 
 export class CreditsService {
@@ -23,7 +23,7 @@ export class CreditsService {
   }
 
   // 扣除點數
-  async deductCredits(userId: string, amount: number) {
+  async deductCredits(userId: string, amount: number): Promise<number> {
     const credits = await this.getUserCredits(userId);
     
     const { error } = await supabase
@@ -35,5 +35,7 @@ export class CreditsService {
       console.error("更新點數錯誤:", error);
       throw error;
     }
+
+    return credits.amount - amount;
   }
 } 

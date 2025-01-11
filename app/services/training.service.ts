@@ -34,12 +34,8 @@ export class TrainingService {
 
   async createTraining(signedUrl: string, body: any) {
     const modelName = body.modelName;
-    const age = body.age;
-    const eyeColor = body.eyeColor;
-    const ethnicity = body.ethnicity;
-    const photoType = body.photoType;
-    const userId = body.userId;
-    const basePrompt = `a photo of a ${ethnicity} ${age} year old ${photoType} with ${eyeColor} eyes`;
+    const basePrompt = body.basePrompt;
+    // const basePrompt = `a photo of a ${ethnicity} ${age} year old ${photoType} with ${eyeColor} eyes`;
     return await this.replicate.trainings.create(
       "ostris",
       "flux-dev-lora-trainer",

@@ -121,5 +121,6 @@ model trainings {
   completed    Boolean  @default(false)
   model_name   String
   base_prompt  String
+  version_id   String?
 }
 

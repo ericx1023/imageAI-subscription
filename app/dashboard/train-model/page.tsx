@@ -29,10 +29,12 @@ import ModelTrainer from "./ModelTrainer"
 import { useEffect, useState } from "react"
 import { useUser } from "@clerk/nextjs"
 import { isValidModelName } from "@/utils/validations/modelValidators"
+import { useRouter } from 'next/navigation'
 
 
 
 const formSchema = z.object({
+  disabled: z.boolean(),
   modelName: z.string()
     .min(2, { message: "名稱必須至少包含5個字元" })
     .max(50, { message: "名稱不能超過20個字元" })
@@ -53,6 +55,7 @@ const formSchema = z.object({
 export default function TrainModelPage() {
   const [credits, setCredits] = useState<number>(0)
   const { user } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchCredits = async () => {
@@ -62,6 +65,11 @@ export default function TrainModelPage() {
         const response = await fetch(`/api/credits?userId=${user?.id}`)
         const data = await response.json()
         setCredits(data.credits)
+        if(data.credits === 0) {
+          toast.warning('您已經沒有足夠的點數，請升級您的方案')
+          //disable the
+          // router.push('/pricing')
+        }
       } catch (error) {
         console.error('獲取點數時發生錯誤:', error)
         toast.error('無法獲取點數資訊')
@@ -69,9 +77,10 @@ export default function TrainModelPage() {
     }
   
     fetchCredits()
-  }, [user])
+  }, [user, router])
   
   const form = useForm<z.infer<typeof formSchema>>({
+    disabled: credits === 0,
     resolver: zodResolver(formSchema),
     defaultValues: {
       modelName: "",
@@ -95,7 +104,7 @@ export default function TrainModelPage() {
         <CardHeader>
           <CardTitle>歡迎使用 Photo AI!</CardTitle>
           <CardDescription>
-            開始創建您的第一個AI人物模型（例如您自己），這將花費約30分鐘，之後您就可以開始使用��自己的AI模型進行第一次拍攝！
+            開始創建您的第一個AI人物模型（例如您自己），這將花費約30分鐘，之後您就可以開始使用自己的AI模型進行第一次拍攝！
           </CardDescription>
           <div className="mt-4 space-y-4">
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">

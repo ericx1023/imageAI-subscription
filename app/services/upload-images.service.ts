@@ -35,3 +35,12 @@ export class UploadImagesService {
     return data.path
   } 
 }
+
+export async function uploadAll(userId: string, modelId: string, images: any[]): Promise<any[]> {
+  const uploadService = new UploadImagesService(
+    userId,
+    modelId
+  );
+  const uploadedImages = await Promise.all(images.map(image => uploadService.upload(image)));
+  return uploadedImages;
+}

@@ -5,10 +5,10 @@ import { createClient } from "@supabase/supabase-js";
 import { CreditsService } from "@/app/services/credits.service";
 import { TrainingService } from "@/app/services/training.service";
 import { GenerateService } from "@/app/services/generate.service";
-import { CloudflareService, UploadImagesService } from "@/app/services/upload-images.service";
+import { UploadImagesService, uploadAll } from "@/app/services/upload-images.service";
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!,
 );
 
 const creditsService = new CreditsService();
@@ -38,10 +38,10 @@ export async function POST(req: Request) {
       await trainingService.updateTrainedModel(userId, payload.id, modelName!);
       //after training, generate picture for user
       const generateService = new GenerateService();
-      const images = await generateService.generatePicture(userId, payload.id, modelName!);
+      const images = await generateService.generateAllPictures(userId, payload.id, modelName!);
       //upload images to cloudflare
-      const uploadImagesService = new UploadImagesService(userId, payload.id);
-      const uploadedImages = await uploadImagesService.upload(images);
+      // const uploadImagesService = new UploadImagesService(userId, payload.id);
+      const uploadedImages = await uploadAll(userId, payload.id, images);
 
       console.log('Uploaded images:', uploadedImages)
       //send email to user
