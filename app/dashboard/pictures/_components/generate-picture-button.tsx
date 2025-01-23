@@ -1,14 +1,18 @@
 'use client';
 
+import { Training } from "../page";
+
 interface GenerateButtonProps {
   userId: string;
   modelId: string;
   modelName: string;
+  trainings: Training[];
   basePrompt: string;
-  onImageGenerated: (imageUrl: string) => void;
+  finalPrompt: string;
+  onImageGenerated: (url: string) => void;
 }
 
-export default function GenerateButton({ userId, modelId, modelName, basePrompt, onImageGenerated }: GenerateButtonProps) {
+export default function GenerateButton({ userId,modelId, trainings, modelName, basePrompt, onImageGenerated }: GenerateButtonProps) {
   async function handleGenerateImages() {
     try {
       const response = await fetch('/api/generate-picture', {
@@ -16,7 +20,7 @@ export default function GenerateButton({ userId, modelId, modelName, basePrompt,
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ userId, modelId, modelName, basePrompt })
+        body: JSON.stringify({ userId, modelId, training: trainings[0].output.version, modelName, basePrompt })
       });
       const data = await response.json();
       console.log(data);

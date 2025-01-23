@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from "@supabase/supabase-js";
 import GenerateButton from './_components/generate-picture-button';
-import PicturesClient from './components/PicturesClient';
+import PicturesClient from './_components/PicturesClient';
 export type Training = {
   id: string;
   status: string;
@@ -30,7 +30,6 @@ export default async function PicturesPage() {
   const { data: models } = await supabase.from('trainings')
     .select('replicate_model_id, model_name, base_prompt')
     .eq('user_id', userId);
-  console.log(`models: ${JSON.stringify(models)}`);
   //use check_status api to check if the model is ready
   const defaultModel = models?.[0];
   const modelName = defaultModel?.model_name;
@@ -42,7 +41,6 @@ export default async function PicturesPage() {
       training = await getTrainings(modelName);
     }
   } catch (error) {
-    console.error('檢查 Replicate 模型狀態時發生錯誤:', error);
   }
 
   // 預設選擇第一個模型
@@ -56,7 +54,8 @@ export default async function PicturesPage() {
   };
 
   const jpgImages = await supabase.storage.from('generated-images').list(userId!);
-
+  //get supabase table user_images's public_url's signedUrl by user_id
+  
   const webpImages = await Promise.all(
     jpgImages?.data
       ?.filter(file => file.name.endsWith('.webp'))
@@ -65,8 +64,8 @@ export default async function PicturesPage() {
         url: await getImageUrl(file.name) 
       })) ?? []
   );
-  console.log(`webpImages: ${JSON.stringify(webpImages)}`);
 
+  // const webpImages = 
 async function getTrainings(modelName: string): Promise<TrainingsResponse> {
   if (!replicateApiToken) {
     throw new Error('REPLICATE_API_TOKEN is not set');
@@ -76,7 +75,6 @@ async function getTrainings(modelName: string): Promise<TrainingsResponse> {
   const url = new URL(baseUrl);
 
   try {
-    console.log(`url: ${url.toString()}`);
     const response = await fetch(url.toString(), {
       headers: {
         'Authorization': `Token ${replicateApiToken}`,
@@ -90,17 +88,18 @@ async function getTrainings(modelName: string): Promise<TrainingsResponse> {
     }
 
     const data = await response.json();
-    const trainings = data.results.filter((t: Training) => t.input.trigger_word === modelName).filter((t: Training) => t.status === 'succeeded');
+    const trainings = data.results
+    .filter((t: Training) => t.input.trigger_word === modelName)
+    .filter((t: Training) => t.status === 'succeeded');
     return {
       trainings: trainings,
       next: data.next,
     };
   } catch (error) {
-    console.error('Error fetching trainings:', error);
     throw error;
   }
 }
-
+  console.log(`webpImages: ${JSON.stringify(webpImages)}`);
   return (
     <PicturesClient 
       userId={userId!}
