@@ -8,7 +8,6 @@ interface GenerateButtonProps {
   modelName: string;
   trainings: Training[];
   basePrompt: string;
-  finalPrompt: string;
   onImageGenerated: (url: string) => void;
 }
 
@@ -23,7 +22,7 @@ export default function GenerateButton({ userId,modelId, trainings, modelName, b
         body: JSON.stringify({ userId, modelId, training: trainings[0].output.version, modelName, basePrompt })
       });
       const data = await response.json();
-      console.log(data);
+      (data);
       if(data.imageUrl) {
         onImageGenerated(data.imageUrl);
       }
@@ -32,7 +31,7 @@ export default function GenerateButton({ userId,modelId, trainings, modelName, b
     //     body: JSON.stringify(data)
     //   });
     //   const uploadedData = await uploaded.json();
-    //   console.log(uploadedData);
+    //   (uploadedData);
     } catch (error) {
       console.error('生成圖片時發生錯誤:', error);
     }

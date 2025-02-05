@@ -3,7 +3,7 @@ import { userCreate } from "@/utils/data/user/userCreate";
 import { currentUser } from "@clerk/nextjs/server";
 const TestPage = async () => {
     const data = await currentUser()
-    console.log(data)   
+    (data)   
     await userCreate({
         email: data?.emailAddresses?.[0]?.emailAddress!,
         first_name: data?.firstName!,
@@ -11,9 +11,9 @@ const TestPage = async () => {
         profile_image_url: data?.imageUrl!,
         user_id: data?.id!,
       });
-      console.log('User created successfully');
+      ('User created successfully');
 
-    console.log(NextResponse.json({
+    (NextResponse.json({
         status: 200,
         message: "User info inserted",
       }));

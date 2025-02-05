@@ -15,7 +15,7 @@ export class UploadImagesService {
 
 
     public async upload (imageUrl: string): Promise<string> {
-    console.log('Uploading image to Cloudflare Images:', imageUrl)
+    ('Uploading image to Cloudflare Images:', imageUrl)
    
     const imageResponse = await fetch(imageUrl)
     const imageBlob = await imageResponse.blob()

@@ -1,59 +1,24 @@
 'use client'
 
 import { useState } from 'react';
-import { MODEL_PROMPTS } from '@/app/constants/prompts';
+import { getBeachPrompt, MODEL_PROMPTS } from '@/app/constants/prompts';
+import { themes } from '@/app/constants/themes';
+import { Theme } from '@/app/constants/types/theme';
 
-export type Theme = {
-  id: keyof typeof MODEL_PROMPTS;
-  name: string;
-  description: string;
-};
 
 interface SelectThemeProps {
   onThemeSelect: (theme: Theme) => void;
   defaultTheme?: Theme;
+  selectedTheme?: Theme;
 }
 
-const themes: Theme[] = [
-  {
-    id: 'headshot',
-    name: '寵物寫真',
-    description: '與可愛小狗互動的溫馨照片'
-  },
-  {
-    id: 'restaurant',
-    name: '餐廳美食',
-    description: '高級餐廳用餐的精緻場景'
-  },
-  {
-    id: 'professional',
-    name: '專業形象',
-    description: '正式商務風格的專業形象照'
-  },
-  {
-    id: 'catwalk',
-    name: '伸展台',
-    description: '時尚伸展台走秀風格'
-  },
-  {
-    id: 'streetStyle',
-    name: '街拍時尚',
-    description: '街頭時尚攝影風格'
-  },
-  {
-    id: 'beach',
-    name: '海灘運動',
-    description: '陽光沙灘排球運動風格'
-  },
-  {
-    id: 'privateJet',
-    name: '私人飛機',
-    description: '奢華私人飛機內的時尚照'
-  }
-];
 
-export default function SelectTheme({ onThemeSelect, defaultTheme = themes[0] }: SelectThemeProps) {
-  const [selectedTheme, setSelectedTheme] = useState(defaultTheme);
+export default function SelectTheme({ 
+  onThemeSelect, 
+  defaultTheme = themes[0],
+  selectedTheme: propSelectedTheme
+}: SelectThemeProps) {
+  const [selectedTheme, setSelectedTheme] = useState(propSelectedTheme || defaultTheme);
 
   const handleThemeChange = (theme: Theme) => {
     setSelectedTheme(theme);
@@ -80,6 +45,27 @@ export default function SelectTheme({ onThemeSelect, defaultTheme = themes[0] }:
             </div>
           </button>
         ))}
+      </div>
+      {/* show the prompt */}
+      <div className="mt-4">
+        <h4 className="font-medium">Prompt</h4>
+        <textarea 
+          className="w-full text-sm text-white p-2 border rounded"
+          value={selectedTheme?.prompt}
+          rows={5}
+          onChange={(e) => {
+            if (selectedTheme) {
+              setSelectedTheme({
+                ...selectedTheme,
+                prompt: e.target.value
+              });
+              onThemeSelect({
+                ...selectedTheme,
+                prompt: e.target.value
+              });
+            }
+          }}
+        />
       </div>
     </div>
   );

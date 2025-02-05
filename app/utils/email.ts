@@ -11,7 +11,7 @@ interface EmailData {
 
 export async function sendEmail({ to, subject, text }: EmailData) {
   try {
-    console.log('開始發送電子郵件:', { to, subject, text });
+    ('開始發送電子郵件:', { to, subject, text });
     
     const data = await resend.emails.send({
       from: 'Gen My Image <info@mail.genmyimage.com>',
@@ -20,10 +20,10 @@ export async function sendEmail({ to, subject, text }: EmailData) {
       html: text,
     });
     
-    console.log('電子郵件發送成功:', data);
+    ('電子郵件發送成功:', data);
     const emailId = data.data?.id;
     const status = await resend.emails.get(emailId!);
-    console.log('郵件狀態:', status);
+    ('郵件狀態:', status);
     return data;
   } catch (error) {
     console.error('發送電子郵件時發生錯誤:', error);

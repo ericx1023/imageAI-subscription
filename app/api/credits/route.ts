@@ -11,7 +11,6 @@ const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SE
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get('userId');
-  console.log(userId)
 //   return NextResponse.json({ credits: user });
 //   if (!user) {
 //     return NextResponse.json({ error: "未授權" }, { status: 401 });

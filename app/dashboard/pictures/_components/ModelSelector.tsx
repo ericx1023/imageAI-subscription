@@ -7,12 +7,14 @@ interface ModelSelectorProps {
   trainings: Training[];
   onModelSelect: (model: Training) => void;
   defaultModelId?: string;
+  models: any[];
 }
 
 export default function ModelSelector({ 
     trainings, 
   onModelSelect,
-  defaultModelId 
+  defaultModelId,
+  models
 }: ModelSelectorProps) {
   const [selectedModelId, setSelectedModelId] = useState(defaultModelId || trainings[0]?.id);
 
@@ -23,7 +25,6 @@ export default function ModelSelector({
       onModelSelect(selectedModel);
     }
   };
-  console.log(trainings)
   return (
     <div className="w-full max-w-xs mb-4">
       <div className="flex items-center gap-4">
@@ -36,9 +37,9 @@ export default function ModelSelector({
           onChange={handleModelChange}
           className="flex-1 px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-white bg-transparent"
         >
-          {trainings.map((training) => (
-            <option key={training.id} value={training.id}>
-              {training.input.trigger_word}: {training.id}
+          {models.map((model) => (
+            <option key={model.id} value={model.id}>
+              {model.model_name}
             </option>
           ))}
         </select>

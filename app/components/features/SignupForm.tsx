@@ -11,7 +11,7 @@ export default function SignupForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // 處理註冊邏輯
-    console.log('Submitting email:', email)
+    ('Submitting email:', email)
   }
 
   const handleGoogleSignIn = async () => {

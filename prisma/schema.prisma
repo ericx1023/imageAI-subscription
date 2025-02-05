@@ -88,7 +88,6 @@ model model_params {
   status       String   @default("processing")
   photo_count  Int
   model_name     String?
-  user         user     @relation(fields: [user_id], references: [user_id])
 }
 
 
@@ -121,6 +120,8 @@ model trainings {
   completed    Boolean  @default(false)
   model_name   String
   base_prompt  String
+  modelParams  model_params @relation(fields: [modelParams_id], references: [id])
   version_id   String?
 }
+
 

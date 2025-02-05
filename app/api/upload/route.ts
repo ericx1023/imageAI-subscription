@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     });
 
     const uploadResponses = await Promise.all(uploadPromises);
-    console.log('uploadResponses:', JSON.stringify(uploadResponses, null, 2));
+    ('uploadResponses:', JSON.stringify(uploadResponses, null, 2));
     return NextResponse.json({ 
       urls: uploadResponses.map(response => response.data.fullPath)
     });

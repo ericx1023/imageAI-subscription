@@ -7,10 +7,11 @@ import ImageModal from './ImageModal';
 import ModelSelector from './ModelSelector';
 import { Training } from '../page';
 import SelectTheme from './SelectTheme';
-import { MODEL_PROMPTS } from '@/app/constants/prompts';
-import { Theme } from './SelectTheme';
+import { getBeachPrompt, MODEL_PROMPTS } from '@/app/constants/prompts';
+import { Theme } from '@/app/constants/types/theme';
 import ImageGrid from './ImageGrid';
-
+import { PromptProps } from '@/app/constants/types/prompts';
+import { themes } from '@/app/constants/themes';
 interface PicturesClientProps {
   userId: string;
   modelName?: string;
@@ -19,6 +20,7 @@ interface PicturesClientProps {
   basePrompt?: string;
   finalPrompt?: string;
   trainings: Training[];
+  models: any[];
 }
 
 export default function PicturesClient({
@@ -27,7 +29,8 @@ export default function PicturesClient({
   webpImages,
   modelId,
   basePrompt,
-  trainings
+  trainings,
+  models
 }: PicturesClientProps) {
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<any>(null);
@@ -40,19 +43,14 @@ export default function PicturesClient({
     base_prompt: basePrompt,
     finalPrompt: undefined as string | undefined
   });
+  const [currentTheme, setCurrentTheme] = useState<Theme>(themes[0]);
 
   useEffect(() => {
     setCurrentModel(prev => ({
       ...prev,
-      finalPrompt: `${basePrompt}, ${MODEL_PROMPTS.beach({ 
-        photoType: 'male',
-        age: '25-35',
-        eyeColor: 'brown',
-        ethnicity: 'asian',
-        photos: []
-      })}`
+      finalPrompt: `${basePrompt}, ${currentTheme.prompt}`
     }));
-  }, [finalPrompt]);
+  }, [currentTheme]);
 
   const handleModelSelect = (model: any) => {
     setCurrentModel(model);
@@ -83,42 +81,41 @@ export default function PicturesClient({
   };
 
   const handleThemeSelect = (theme: Theme) => {
-    if(theme.id === 'beach') {  
-      finalPrompt = `${basePrompt}, ${MODEL_PROMPTS.beach({ 
-        photoType: 'male',
-        age: '25-35',
-        eyeColor: 'brown',
-        ethnicity: 'asian',
-        photos: []
-      })}`
-    }
-    else {
-      finalPrompt = `${basePrompt}, ${MODEL_PROMPTS[theme.id]}`
-    }
+    setCurrentTheme(theme);
+    
+    // if(theme.id === 'beach') {  
+    //   finalPrompt = getBeachPrompt(modelParams)
+    // }
+    // else {
+      finalPrompt = `${basePrompt}, ${theme.prompt}`
+    // }
     
     setCurrentModel(prev => ({
       ...prev,
       finalPrompt
     }));
   };
-
+  
   return (
     <div>
       <ModelSelector
         trainings={trainings}
         onModelSelect={handleModelSelect}
         defaultModelId={modelId}
+        models={models}
       />
       
-      <SelectTheme onThemeSelect={handleThemeSelect} />
+      <SelectTheme 
+        onThemeSelect={handleThemeSelect}
+        selectedTheme={currentTheme}
+      />
       
       <GenerateButton
         userId={userId}
         modelId={modelId || ''}
         modelName={modelName!} 
         trainings={trainings}
-        basePrompt={basePrompt!}
-        finalPrompt={finalPrompt!}
+        basePrompt={currentTheme.prompt!}
         onImageGenerated={setGeneratedImageUrl}
       />
 
@@ -138,4 +135,4 @@ export default function PicturesClient({
       />
     </div>
   );
-} 
+}

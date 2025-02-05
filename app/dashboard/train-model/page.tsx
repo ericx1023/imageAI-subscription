@@ -95,7 +95,6 @@ export default function TrainModelPage() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     toast.success("模型訓練已開始")
-    console.log(values)
   }
 
   return (

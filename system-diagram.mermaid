@@ -1,0 +1,48 @@
+```mermaid
+graph TB
+    subgraph Client["客戶端"]
+        B[Browser/瀏覽器]
+        M[Mobile App/手機應用]
+    end
+
+    subgraph Frontend["前端層"]
+        R[React SPA]
+        N[Next.js SSR]
+        R --> SC[狀態管理/State Management]
+        R --> RC[路由/Router]
+        N --> SSR[服務端渲染]
+    end
+
+    subgraph Backend["後端層"]
+        API[REST API 服務]
+        Auth[Clerk 認證服務]
+        %% Cache[Redis 快取]
+        MQ[消息隊列]
+        
+        API --> Auth
+        API --> Cache
+        API --> MQ
+    end
+
+    subgraph Database["資料層"]
+        DB[(PostgreSQL 資料庫)]
+        
+        API --> DB
+    end
+
+    subgraph AI["AI 服務"]
+        Rep[(Replicate API)]
+
+        API --> Rep
+    end
+
+    B --> Frontend
+    M --> Frontend
+    Frontend --> Backend
+
+    style Client fill:#f9f,stroke:#333,stroke-width:2px
+    style Frontend fill:#bbf,stroke:#333,stroke-width:2px
+    style Backend fill:#bfb,stroke:#333,stroke-width:2px
+    style Database fill:#fbb,stroke:#333,stroke-width:2px
+    style AI fill:#ffb,stroke:#333,stroke-width:2px
+```

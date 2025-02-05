@@ -64,7 +64,7 @@ export async function POST(request: Request) {
       const creditService = new CreditsService();
       try {
         const remainingCredits = await creditService.deductCredits(userId, 1);
-        console.log(`扣除點數成功，剩餘點數: ${remainingCredits}`);
+        (`扣除點數成功，剩餘點數: ${remainingCredits}`);
         
         return NextResponse.json({
           modelId: training.id,

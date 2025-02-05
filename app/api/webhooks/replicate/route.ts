@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       // const uploadImagesService = new UploadImagesService(userId, payload.id);
       const uploadedImages = await uploadAll(userId, payload.id, images);
 
-      console.log('Uploaded images:', uploadedImages)
+      ('Uploaded images:', uploadedImages)
       //send email to user
 
       if (user && user.emailAddresses.length > 0) {
