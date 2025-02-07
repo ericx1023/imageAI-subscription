@@ -30,6 +30,7 @@ import { useEffect, useState, useRef } from "react"
 import { useUser } from "@clerk/nextjs"
 import { isValidModelName } from "@/utils/validations/modelValidators"
 import { useRouter } from 'next/navigation'
+import Image from "next/image"
 
 
 
@@ -144,8 +145,9 @@ export default function TrainModelPage() {
                   <FormItem>
                     <FormLabel>模型名稱</FormLabel>
                     <FormDescription>
-                      這個名稱將作為您的模型名稱，在生成圖片時系統會使用 &quot;model&quot; 作為 trigger word。<br />
-                      建議使用簡單且容易記住的英文名稱，例如 &quot;John Chu&quot; 或 &quot;Mary Wang&quot;。
+                      請為您的AI模型取一個名稱，這個名稱將用於識別您的模型。<br />
+                      建議使用您的英文名字，例如 &quot;John Chu&quot; 或 &quot;Mary Wang&quot;。<br />
+                      在生成圖片時，系統將自動使用 &quot;model&quot; 作為關鍵詞來觸發您的模型。
                     </FormDescription>
                     <FormControl>
                       <Input placeholder="模型名稱" {...field} />
@@ -170,9 +172,7 @@ export default function TrainModelPage() {
                       <SelectContent>
                         <SelectItem value="male">男性</SelectItem>
                         <SelectItem value="female">女性</SelectItem>
-                        <SelectItem value="person">不指定</SelectItem>
-                        <SelectItem value="dog">狗</SelectItem>
-                        <SelectItem value="cat">貓</SelectItem>
+                        <SelectItem value="queer">酷兒(跨性別)</SelectItem>
                         {/* <SelectItem value="couple">情侶/兩人</SelectItem>
                         <SelectItem value="other">其他</SelectItem>
                         <SelectItem value="style">風格</SelectItem>
@@ -261,7 +261,9 @@ export default function TrainModelPage() {
                     請確保照片是最近拍攝的，因為您的外表可能與多年前有所不同。
                   </p>
                   <div className="grid grid-cols-5 gap-2">
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">特寫照</div>
+                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">
+                      <Image src="/images/train/headshot.jpeg" alt="headshot" width={100} height={100} />
+                    </div>
                     <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">全身照</div>
                     <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">側面照</div>
                     <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">微笑照</div>
