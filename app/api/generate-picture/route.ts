@@ -83,7 +83,7 @@ export async function POST(req: Request) {
 
     const replicateConfig: ReplicateConfig = {
       model: "dev",
-      prompt: basePrompt,
+      prompt: `${basePrompt}, model`,
       go_fast: false,
       lora_scale: 1,
       megapixels: "1",

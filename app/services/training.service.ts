@@ -50,7 +50,7 @@ export class TrainingService {
           resolution: "1024",
           autocaption: true,
           input_images: signedUrl,
-          trigger_word: 'model',
+          trigger_word: modelName,
           learning_rate: 0.0004,
           wandb_project: "flux_train_replicate",
           wandb_save_interval: 100,

@@ -142,9 +142,9 @@ export default function TrainModelPage() {
                 name="modelName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>您的名稱</FormLabel>
+                    <FormLabel>模型名稱</FormLabel>
                     <FormDescription>
-                      這個名稱將作為您的模型識別詞(Trigger Word)，在生成圖片時使用。<br />
+                      這個名稱將作為您的模型名稱，在生成圖片時系統會使用 &quot;model&quot; 作為 trigger word。<br />
                       建議使用簡單且容易記住的英文名稱，例如 &quot;John Chu&quot; 或 &quot;Mary Wang&quot;。
                     </FormDescription>
                     <FormControl>

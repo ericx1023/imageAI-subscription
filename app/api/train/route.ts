@@ -57,7 +57,7 @@ async function getTrainings(modelName: string): Promise<TrainingsResponse> {
 
     const data = await response.json();
     const trainings = data.results
-      .filter((t: Training) => t.input.trigger_word === modelName)
+      .filter((t: Training) => t.input.trigger_word === 'model')
       .filter((t: Training) => t.status === "succeeded");
     return {
       trainings: trainings,
