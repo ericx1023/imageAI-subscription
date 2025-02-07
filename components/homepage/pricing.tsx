@@ -44,13 +44,19 @@ const PricingHeader = ({ title, subtitle }: { title: string; subtitle: string })
 const PricingSwitch = ({ onSwitch }: PricingSwitchProps) => (
   <Tabs defaultValue="0" className="w-40 mx-auto" onValueChange={onSwitch}>
     <TabsList className="py-6 px-2">
-      <TabsTrigger value="0" className="text-base">
-        <p className="text-black dark:text-white">
+      <TabsTrigger 
+        value="0" 
+        className="text-base data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black"
+      >
+        <p className="data-[state=active]:text-inherit">
           Monthly
         </p>
       </TabsTrigger>
-      <TabsTrigger value="1" className="text-base">
-        <p className="text-black dark:text-white">
+      <TabsTrigger 
+        value="1" 
+        className="text-base data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black"
+      >
+        <p className="data-[state=active]:text-inherit">
           Yearly
         </p>
       </TabsTrigger>
@@ -62,7 +68,10 @@ const PricingCard = ({ user, handleCheckout, isYearly, title, priceIdMonthly, pr
   const router = useRouter();
   return (
     <Card
-      className={cn(`w-72 flex flex-col justify-between py-1 ${popular ? "border-rose-400" : "border-zinc-700"} mx-auto sm:mx-0`, {
+      className={cn(`w-72 flex flex-col justify-between py-1 border-zinc-700 mx-auto sm:mx-0 
+        hover:border-rose-400 transition-all duration-300
+        hover:shadow-lg hover:shadow-rose-400/20
+        active:scale-95 active:border-rose-600`, {
         "animate-background-shine bg-white dark:bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] transition-colors":
           exclusive,
       })}>

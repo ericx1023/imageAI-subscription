@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import config from "./config";
+import type { NextRequest } from 'next/server'
 
 let clerkMiddleware: (arg0: (auth: any, req: any) => any) => { (arg0: any): any; new(): any; }, createRouteMatcher;
 
@@ -16,7 +17,7 @@ const isProtectedRoute = config.auth.enabled
   ? createRouteMatcher(["/dashboard(.*)"])
   : () => false;
 
-export default function middleware(req: any) {
+export function middleware(request: NextRequest) {
   if (config.auth.enabled) {
     return clerkMiddleware(async (auth, req) => {
       const resolvedAuth = await auth();
@@ -26,7 +27,7 @@ export default function middleware(req: any) {
       } else {
         return NextResponse.next();
       }
-    })(req);
+    })(request);
   } else {
     return NextResponse.next();
   }

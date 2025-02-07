@@ -26,7 +26,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner"
 import ModelTrainer from "./ModelTrainer"
 // const credits = supabse.get('credits')
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useUser } from "@clerk/nextjs"
 import { isValidModelName } from "@/utils/validations/modelValidators"
 import { useRouter } from 'next/navigation'
@@ -56,22 +56,36 @@ export default function TrainModelPage() {
   const [credits, setCredits] = useState<number>(0)
   const { user } = useUser();
   const router = useRouter();
+  const navigationRef = useRef(false);
 
   useEffect(() => {
     const fetchCredits = async () => {
       if (!user) return;
       
       try {
-        const response = await fetch(`/api/credits?userId=${user?.id}`)
+        const response = await fetch(`/api/credits?userId=${user.id}`)
         const data = await response.json()
         setCredits(data.credits)
-        if(data.credits === 0) {
-          toast.warning('您已經沒有足夠的點數，請升級您的方案')
-          //disable the
-          // router.push('/pricing')
+        if(data.credits === 0 && !navigationRef.current) {
+          const shouldRedirect = await toast.custom(t => (
+            <div className="bg-white p-4 rounded-lg shadow-lg">
+              <p className="mb-4 text-gray-800">您的點數已用完。是否前往方案頁面購買更多點數？</p>
+              <div className="flex justify-end gap-2">
+                <button onClick={() => {
+                  toast.dismiss(t)
+                  return false
+                }} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">取消</button>
+                <button onClick={() => {
+                  toast.dismiss(t)
+                  navigationRef.current = true;
+                  router.push('/pricing')
+                  return true
+                }} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">確定</button>
+              </div>
+            </div>
+          ))
         }
       } catch (error) {
-        console.error('獲取點數時發生錯誤:', error)
         toast.error('無法獲取點數資訊')
       }
     }

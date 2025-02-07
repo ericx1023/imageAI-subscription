@@ -21,7 +21,6 @@ type TrainingsResponse = {
   next: string | null;
 }
 
-const replicateApiToken = process.env.REPLICATE_API_TOKEN;
 
 
 export default async function PicturesPage() {
@@ -37,12 +36,6 @@ export default async function PicturesPage() {
   console.log('modelName: ', modelName);
   let training;
 
-  try {
-    if (models?.[0]?.model_name) {
-      training = await getTrainings(modelName);
-    }
-  } catch (error) {
-  }
 
   // 預設選擇第一個模型
 
@@ -59,39 +52,7 @@ export default async function PicturesPage() {
       })) ?? []
   );
 
-async function getTrainings(modelName: string): Promise<TrainingsResponse> {
-  if (!replicateApiToken) {
-    throw new Error('REPLICATE_API_TOKEN is not set');
-  }
 
-  const baseUrl = 'https://api.replicate.com/v1/trainings';
-  const url = new URL(baseUrl);
-
-  try {
-    const response = await fetch(url.toString(), {
-      headers: {
-        'Authorization': `Token ${replicateApiToken}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`Replicate API error: ${error.detail || response.statusText}`);
-    }
-
-    const data = await response.json();
-    const trainings = data.results
-    .filter((t: Training) => t.input.trigger_word === modelName)
-    .filter((t: Training) => t.status === 'succeeded');
-    return {
-      trainings: trainings,
-      next: data.next,
-    };
-  } catch (error) {
-    throw error;
-  }
-}
 async function getImageUrl(imageName: string) {
   const { data } = await supabase
     .storage
@@ -109,7 +70,6 @@ async function getImageUrl(imageName: string) {
         webpImages={webpImages} 
         modelId={defaultModel?.replicate_model_id}
         basePrompt={defaultModel?.base_prompt}
-        trainings={training?.trainings || []}
         models={models || []}
     />
     </div>

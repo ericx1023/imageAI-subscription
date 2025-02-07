@@ -19,7 +19,6 @@ interface PicturesClientProps {
   modelId?: string;
   basePrompt?: string;
   finalPrompt?: string;
-  trainings: Training[];
   models: any[];
 }
 
@@ -29,9 +28,9 @@ export default function PicturesClient({
   webpImages,
   modelId,
   basePrompt,
-  trainings,
   models
 }: PicturesClientProps) {
+  const [trainings, setTrainings] = useState<Training[]>([]);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<any>(null);
   const [modalMode, setModalMode] = useState<'view' | 'edit'>('view');
@@ -51,6 +50,10 @@ export default function PicturesClient({
       finalPrompt: `${basePrompt}, ${currentTheme.prompt}`
     }));
   }, [currentTheme]);
+
+  useEffect(() => {
+    fetchTrainings(modelName!);
+  }, [modelName]);
 
   const handleModelSelect = (model: any) => {
     setCurrentModel(model);
@@ -79,7 +82,11 @@ export default function PicturesClient({
     setIsModalOpen(false);
     setSelectedImage(null);
   };
-
+  const fetchTrainings = async (modelName: string) => {
+    const response = await fetch(`/api/trainings?modelName=${modelName}`);
+    const data = await response.json();
+    setTrainings(data);
+  };
   const handleThemeSelect = (theme: Theme) => {
     setCurrentTheme(theme);
     
@@ -95,7 +102,7 @@ export default function PicturesClient({
       finalPrompt
     }));
   };
-  
+
   return (
     <div>
       <ModelSelector

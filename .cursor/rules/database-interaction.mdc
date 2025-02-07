@@ -1,0 +1,9 @@
+---
+description: Use Prisma for all database operation
+globs: 
+---
+
+# Database interaction
+
+User Prisma for all database interactions
+Keep your schema.prisma as your single source of truth

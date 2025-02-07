@@ -10,7 +10,7 @@ export default function ProjectsPage() {
             You have no projects
           </h1>
           <p className="text-sm text-muted-foreground mb-3">
-            Projects will show when you start using Nextjs Starter Kit
+            Projects will show when you start using Gen My Photo
           </p>
           <Button>Create Project</Button>
         </div>

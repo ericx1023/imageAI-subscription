@@ -98,14 +98,36 @@ async function handleSubscriptionEvent(
   }
 
   if (type === "created" || type === "updated") {
-    const creditAmount = planId.includes('premium') ? 5 : 1; // Premium 給 5 credits，Basic 給 1 credit
+    if (!subscriptionData.user_id) {
+      console.error('Missing user_id in subscription metadata');
+      return NextResponse.json({
+        status: 400,
+        error: 'Missing user ID in subscription metadata'
+      });
+    }
+
+    const { data: user, error: userError } = await supabase
+      .from('user')
+      .select('user_id')
+      .eq('user_id', subscriptionData.user_id)
+      .single();
+
+    if (userError || !user) {
+      console.error('User not found:', subscriptionData.user_id);
+      return NextResponse.json({
+        status: 404,
+        error: 'User not found'
+      });
+    }
+
+    const creditAmount = planId.includes('premium') ? 5 : 1;
     const nextMonth = new Date();
     nextMonth.setMonth(nextMonth.getMonth() + 1);
 
     const { error: creditError } = await supabase
       .from('credits')
       .upsert({
-        user_id: subscription.metadata?.userId,
+        user_id: subscriptionData.user_id,
         amount: creditAmount,
         used: 0,
         expires_at: nextMonth.toISOString()
