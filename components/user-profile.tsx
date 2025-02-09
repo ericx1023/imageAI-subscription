@@ -40,7 +40,10 @@ export function UserProfile() {
                 </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
+                
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>{user?.emailAddresses[0].emailAddress}</DropdownMenuLabel>
+
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                     <Link href="/user-profile">
