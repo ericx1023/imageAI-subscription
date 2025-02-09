@@ -27,14 +27,25 @@ export default async function PicturesPage() {
   
   const { userId } = await auth();
   const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!);
-  const { data: models } = await supabase.from('trainings')
+  
+  console.log('Querying with userId:', userId);
+  
+  const { data: models, error } = await supabase.from('trainings')
     .select('replicate_model_id, model_name, base_prompt')
-    .eq('user_id', userId);
-  //use check_status api to check if the model is ready
+    .eq('user_id', userId)
+
+    
+  if (error) {
+    console.error('Supabase query error:', error);
+  }
+  
+  
   const defaultModel = models?.[0];
   const modelName = defaultModel?.model_name;
+  console.log('userId: ', userId);
   console.log('modelName: ', modelName);
-  let training;
+  console.log('Retrieved models:', models);
+  
 
 
   // 預設選擇第一個模型

@@ -31,6 +31,8 @@ import { useUser } from "@clerk/nextjs"
 import { isValidModelName } from "@/utils/validations/modelValidators"
 import { useRouter } from 'next/navigation'
 import Image from "next/image"
+import { ExampleImage } from "./components/ExampleImage"
+import { BadExampleImage } from "./components/BadExampleImage"
 
 
 
@@ -261,18 +263,16 @@ export default function TrainModelPage() {
                     請確保照片是最近拍攝的，因為您的外表可能與多年前有所不同。
                   </p>
                   <div className="grid grid-cols-5 gap-2">
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">
-                      <Image src="/images/train/headshot.jpeg" alt="headshot" width={100} height={100} />
-                    </div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">全身照</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">側面照</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">微笑照</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">自然照</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">戶外照</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">室內照</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">正面照</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">45度角</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">生活照</div>
+                    <ExampleImage src="/images/train/headshot.jpeg" alt="headshot" />
+                    <ExampleImage src="/images/train/whole2.jpeg" alt="fullbody" />
+                    <ExampleImage src="/images/train/side.JPG" alt="side view" />
+                    <ExampleImage src="/images/train/smile.jpeg" alt="smiling" />
+                    <ExampleImage src="/images/train/nature.JPG" alt="natural" />
+                    <ExampleImage src="/images/train/outdoor.jpeg" alt="outdoor" />
+                    <ExampleImage src="/images/train/IMG_3833.jpeg" alt="indoor" />
+                    <ExampleImage src="/images/train/visa_head_2024.jpg" alt="front view" />
+                    <ExampleImage src="/images/train/45degree.jpeg" alt="45 degree angle" />
+                    <ExampleImage src="/images/train/life.jpeg" alt="lifestyle" />
                   </div>
                 </div>
 
@@ -283,16 +283,34 @@ export default function TrainModelPage() {
                     濃妝照片、使用濾鏡的照片、姿勢重複的照片、臉部被切掉或不清晰的照片，以及太舊的照片（因為您現在的外表可能已經改變）。
                   </p>
                   <div className="grid grid-cols-5 gap-2">
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">IG截圖</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">戴帽照</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">太陽眼鏡</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">群組照</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">寵物合照</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">濃妝照</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">濾鏡照</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">臉部切掉</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">模糊照</div>
-                    <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground">舊照片</div>
+                    <BadExampleImage 
+                      text="IG截圖" 
+                      src="/images/bad_example/instagram.jpeg" 
+                    />
+                    <BadExampleImage 
+                      text="戴帽照" 
+                      src="/images/bad_example/hat.png" 
+                    />
+                    <BadExampleImage 
+                      text="太陽眼鏡" 
+                      src="/images/bad_example/sunglass.jpeg" 
+                    />
+                    <BadExampleImage 
+                      text="群組照" 
+                      src="/images/bad_example/group.jpeg" 
+                    />
+                    <BadExampleImage 
+                      text="濃妝照" 
+                      src="/images/bad_example/makeup.jpg" 
+                    />
+                    <BadExampleImage 
+                      text="濾鏡照" 
+                      src="/images/bad_example/filter.jpeg" 
+                    />
+                    <BadExampleImage 
+                      text="臉部切掉" 
+                      src="/images/bad_example/partial.jpeg" 
+                    />
                   </div>
                 </div>
               </div>
@@ -312,7 +330,7 @@ export default function TrainModelPage() {
                         我同意使用條款和隱私政策
                       </FormLabel>
                       <FormDescription>
-                        您創建的AI模型是私人的，只能由您使用。
+                        您創建的AI模型是私人的，只能使用您自己的照片來訓練。
                       </FormDescription>
                     </div>
                   </FormItem>

@@ -4,6 +4,7 @@ import { TrainingService } from "../../services/training.service";
 import { SignedUrlData, TrainingError } from "../../types/training";
 import { createClient } from "@supabase/supabase-js";
 import { CreditsService } from "@/app/services/credits.service";
+import { currentUser } from "@clerk/nextjs";
 
 export type Training = {
   id: string;
@@ -158,11 +159,66 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
-  const { userId } = await auth();
-  // ... 驗證邏輯 ...
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const trainingId = searchParams.get('trainingId');
+  const replicateApiToken = process.env.REPLICATE_API_TOKEN;
 
-  const trainings = await getTrainings(modelName);
+  if (!trainingId) {
+    return createErrorResponse({
+      error: "缺少訓練ID",
+      message: "請提供訓練ID",
+    });
+  }
 
-  return Response.json(trainings);
+  if (!replicateApiToken) {
+    return createErrorResponse({
+      error: "API Token未設定",
+      message: "系統配置錯誤",
+    });
+  }
+
+  try {
+    const response = await fetch(`https://api.replicate.com/v1/trainings/${trainingId}`, {
+      headers: {
+        Authorization: `Token ${replicateApiToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`Replicate API error: ${error.detail || response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    // 更新資料庫中的訓練狀態
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_KEY!
+    );
+
+    const { error: updateError } = await supabase
+      .from("trainings")
+      .update({ status: data.status })
+      .eq("replicate_model_id", trainingId);
+
+    if (updateError) {
+      console.error("更新訓練狀態錯誤:", updateError);
+    }
+
+    return NextResponse.json({
+      status: data.status,
+      modelVersion: data.version,
+      error: data.error,
+      logs: data.logs
+    });
+  } catch (error) {
+    console.error("檢查訓練狀態錯誤:", error);
+    return createErrorResponse({
+      error: "檢查訓練狀態失敗",
+      message: error instanceof Error ? error.message : "未知錯誤",
+    });
+  }
 }
