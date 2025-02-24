@@ -1,5 +1,6 @@
 'use client';
 
+import Replicate from "replicate";
 import { Training } from "../page";
 
 interface GenerateButtonProps {
@@ -21,39 +22,16 @@ export default function GenerateButton({
   onImageGenerated,
   versionId 
 }: GenerateButtonProps) {
+    
   async function handleGenerateImages() {
+
     try {
-      const selectedTraining = trainings.find(t => t.id === modelId);
-      
-      if (!selectedTraining) {
-        throw new Error('找不到對應的訓練模型');
-      }
 
       // 如果沒有 versionId，嘗試從 Replicate API 獲取
-      let modelVersion = versionId;
-      if (!modelVersion) {
-        // 從 Replicate API 獲取最新的版本
-        const response = await fetch('/api/get-model-version', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ 
-            modelId 
-          })
-        });
         
-        if (!response.ok) {
+        if (!versionId) {
           throw new Error('無法獲取模型版本');
         }
-        
-        const data = await response.json();
-        modelVersion = data.version;
-        
-        if (!modelVersion) {
-          throw new Error('無法獲取模型版本');
-        }
-      }
 
       const response = await fetch('/api/generate-picture', {
         method: 'POST',
@@ -63,7 +41,7 @@ export default function GenerateButton({
         body: JSON.stringify({ 
           userId, 
           modelId, 
-          modelVersion,
+          versionId,
           modelName: modelName.trim(),
           basePrompt 
         })

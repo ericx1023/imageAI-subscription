@@ -20,6 +20,7 @@ interface PicturesClientProps {
   basePrompt?: string;
   finalPrompt?: string;
   models: any[];
+  latestVersion?: string;
 }
 
 export default function PicturesClient({
@@ -28,10 +29,12 @@ export default function PicturesClient({
   webpImages,
   modelId,
   basePrompt,
-  models
+  models,
+  latestVersion
 }: PicturesClientProps) {
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
+  const [localImages, setLocalImages] = useState(webpImages);
   const [selectedImage, setSelectedImage] = useState<any>(null);
   const [modalMode, setModalMode] = useState<'view' | 'edit'>('view');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -103,6 +106,16 @@ export default function PicturesClient({
     }));
   };
 
+  const handleImageGenerated = (imageUrl: string) => {
+    setGeneratedImageUrl(imageUrl);
+    debugger
+    setLocalImages(prev => [{
+      url: imageUrl,
+      created_at: new Date().toISOString(),
+      prompt: currentModel.finalPrompt
+    }, ...prev]);
+  };
+
   return (
     <div>
       <ModelSelector
@@ -123,11 +136,12 @@ export default function PicturesClient({
         modelName={modelName!} 
         trainings={trainings}
         basePrompt={currentTheme.prompt!}
-        onImageGenerated={setGeneratedImageUrl}
+        onImageGenerated={handleImageGenerated}
+        versionId={latestVersion}
       />
 
       <ImageGrid
-        images={webpImages}
+        images={localImages}
         onDownload={handleDownload}
         onView={handleView}
         onCopyPrompt={handleCopyPrompt}
